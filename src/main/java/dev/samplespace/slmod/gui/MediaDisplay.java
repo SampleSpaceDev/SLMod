@@ -34,16 +34,6 @@ public class MediaDisplay {
         HudRenderCallback.EVENT.register(this::render);
     }
 
-    public void updateValues() {
-        if (this.client.currentScreen != null && !(this.client.currentScreen instanceof ChatScreen) || this.client.isPaused()) {
-            return;
-        }
-
-        this.artist = this.executeCommand("playerctl metadata artist");
-        this.title = this.executeCommand("playerctl metadata title");
-        this.playing = this.executeCommand("playerctl status").equals("Playing");
-    }
-
     private void render(MatrixStack matrixStack, float delta) {
         if (!this.shouldRender()) {
             return;
@@ -62,13 +52,37 @@ public class MediaDisplay {
         textRenderer.drawWithShadow(matrixStack, this.title, scaledWidth - titleWidth, 5, 0x8bd6bc);
     }
 
+    private void updateValues() {
+        if (this.client.currentScreen != null && !(this.client.currentScreen instanceof ChatScreen) || this.client.isPaused()) {
+            return;
+        }
+
+        this.artist = this.executeCommand("playerctl metadata artist");
+        this.title = this.executeCommand("playerctl metadata title");
+        this.playing = this.executeCommand("playerctl status").equals("Playing");
+    }
+
     private boolean shouldRender() {
         return this.enabled && !this.client.options.debugEnabled;
     }
 
-    public boolean toggle() {
-        this.enabled = !this.enabled;
-        return this.enabled;
+    @SuppressWarnings("DataFlowIssue")
+    public void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
+        dispatcher.register(ClientCommandManager.literal("mediadisplay")
+                .then(ClientCommandManager.literal("toggle").executes(context -> {
+                    this.enabled = !this.enabled;
+                    this.client.player.sendMessage(Text.literal("Media display %s.".formatted(this.enabled ? "enabled" : "disabled"))
+                            .formatted(this.enabled ? Formatting.GREEN : Formatting.RED));
+
+                    return Command.SINGLE_SUCCESS;
+                }).build())
+                .then(ClientCommandManager.literal("refresh").executes(context -> {
+                    this.updateValues();
+                    this.client.player.sendMessage(Text.literal("Media display refreshed.").formatted(Formatting.GREEN));
+
+                    return Command.SINGLE_SUCCESS;
+                }).build())
+        );
     }
 
     private String executeCommand(String command) {
@@ -83,24 +97,5 @@ public class MediaDisplay {
         } catch (IOException e) {
             return "Unknown";
         }
-    }
-
-    @SuppressWarnings("DataFlowIssue")
-    public void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        dispatcher.register(ClientCommandManager.literal("mediadisplay")
-                .then(ClientCommandManager.literal("toggle").executes(context -> {
-                    boolean toggled = this.toggle();
-                    this.client.player.sendMessage(Text.literal("Media display %s.".formatted(toggled ? "enabled" : "disabled"))
-                            .formatted(toggled ? Formatting.GREEN : Formatting.RED));
-
-                    return Command.SINGLE_SUCCESS;
-                }).build())
-                .then(ClientCommandManager.literal("refresh").executes(context -> {
-                    this.updateValues();
-                    this.client.player.sendMessage(Text.literal("Media display refreshed.").formatted(Formatting.GREEN));
-
-                    return Command.SINGLE_SUCCESS;
-                }).build())
-        );
     }
 }
