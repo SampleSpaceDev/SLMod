@@ -32,7 +32,7 @@ public class TitleScreenMixin extends Screen {
         int l = this.height / 4 + 48;
         this.addDrawableChild(new TexturedButtonWidget(this.width / 2 + 107, l + 72 + 12 - 29,
                 13, 24, 0, 0, 0, this.HYPIXEL_TEXTURE, 13, 24, (button) ->
-                ConnectScreen.connect(new MultiplayerScreen(this), this.client, ServerAddress.parse(this.HYPIXEL.address), this.HYPIXEL),
+                ConnectScreen.connect(new MultiplayerScreen(this), this.client, ServerAddress.parse(this.HYPIXEL.address), this.HYPIXEL, false),
                 Text.literal("Hypixel")
         ));
     }

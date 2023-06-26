@@ -8,8 +8,8 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ChatScreen;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -34,7 +34,7 @@ public class MediaDisplay {
         HudRenderCallback.EVENT.register(this::render);
     }
 
-    private void render(MatrixStack matrixStack, float delta) {
+    private void render(DrawContext context, float delta) {
         if (!this.shouldRender()) {
             return;
         }
@@ -46,10 +46,10 @@ public class MediaDisplay {
         int separatorWidth = textRenderer.getWidth(" - ");
         int titleWidth = textRenderer.getWidth(this.title);
 
-        textRenderer.draw(matrixStack, this.playing ? "▶" : "⏸", scaledWidth - indicatorWidth - artistWidth - separatorWidth - titleWidth, 6, 0xc7f0e2);
-        textRenderer.drawWithShadow(matrixStack, this.artist, scaledWidth - artistWidth - separatorWidth - titleWidth, 5, 0xa9dbca);
-        textRenderer.drawWithShadow(matrixStack, " - ", scaledWidth - separatorWidth - titleWidth, 5, 0xAAAAAA);
-        textRenderer.drawWithShadow(matrixStack, this.title, scaledWidth - titleWidth, 5, 0x8bd6bc);
+        context.drawText(textRenderer, Text.literal(this.playing ? "▶" : "⏸"), scaledWidth - indicatorWidth - artistWidth - separatorWidth - titleWidth, 6, 0xc7f0e2, false);
+        context.drawTextWithShadow(textRenderer, this.artist, scaledWidth - artistWidth - separatorWidth - titleWidth, 5, 0xa9dbca);
+        context.drawTextWithShadow(textRenderer, " - ", scaledWidth - separatorWidth - titleWidth, 5, 0xAAAAAA);
+        context.drawTextWithShadow(textRenderer, this.title, scaledWidth - titleWidth, 5, 0x8bd6bc);
     }
 
     private void updateValues() {
